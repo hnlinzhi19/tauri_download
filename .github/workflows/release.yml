@@ -51,7 +51,7 @@ jobs:
 
       # 安装 Node.js
       - name: Setup node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
