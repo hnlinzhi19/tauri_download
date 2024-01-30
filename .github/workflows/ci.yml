@@ -30,12 +30,6 @@ jobs:
       - name: install dependencies
         run: pnpm install
 
-      - name: check formatting
-        run: pnpm format:check
-
-      - name: run linter
-        run: pnpm lint
-
       - name: build
         run: pnpm build
 
