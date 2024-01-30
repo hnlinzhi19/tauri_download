@@ -16,7 +16,7 @@
 
 .container {
   margin: 0;
-  padding-top: 10vh;
+  padding-top: 20px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -43,6 +43,7 @@ a {
   font-weight: 500;
   color: #646cff;
   text-decoration: inherit;
+  margin: 0 10px;
 }
 
 a:hover {
@@ -57,8 +58,8 @@ input,
 button {
   border-radius: 8px;
   border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
+  padding: 0.4em 0.4em;
+  font-size: 0.8em;
   font-weight: 500;
   font-family: inherit;
   color: #0f0f0f;
