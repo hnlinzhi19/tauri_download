@@ -1,4 +1,4 @@
-import { FC, useRef } from "react";
+import { FC, useRef, useState } from "react";
 
 import Button from "./butn";
 interface Props {
@@ -21,6 +21,7 @@ export interface UserData {
 const Buttons: FC<Props> = ({ data }) => {
   const { videos, meyoId, activityId } = data;
   const ref = useRef(null);
+  const [clicked, setClicked] = useState(false);
 
   return (
     <div ref={ref}>
@@ -46,8 +47,14 @@ const Buttons: FC<Props> = ({ data }) => {
                 cur.click();
               }
             });
+            setClicked(true);
           }
         }}
+        style={
+          clicked
+            ? { background: "#002c8c", color: "#fff", padding: "4px 10px" }
+            : { background: "#e6fffb", color: "#000", padding: "4px 10px" }
+        }
       >
         全部下载
       </a>
