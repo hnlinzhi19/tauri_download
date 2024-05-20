@@ -1,6 +1,7 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { getClient, ResponseType } from "@tauri-apps/api/http";
+import { exists, writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
 
 import * as fs from "@tauri-apps/api/fs";
 interface Props {
@@ -13,7 +14,7 @@ interface Props {
 const Button: FC<Props> = ({ url, id, activityId, index, cb }) => {
   const [load, setLoad] = useState(0); // 0 before load 1 loading 2 loaded 3 load error
   async function download(url: string, fileName: string) {
-    if (load === 1) {
+    if (load === 1 || load === 2) {
       return;
     }
     setLoad(1);
@@ -25,11 +26,11 @@ const Button: FC<Props> = ({ url, id, activityId, index, cb }) => {
           responseType: ResponseType.Binary,
         })
       ).data as any;
-      await fs.writeBinaryFile(
+      await writeBinaryFile(
         fileName, // Change this to where the file should be saved
         data,
         {
-          dir: fs.BaseDirectory.Download,
+          dir: BaseDirectory.Download,
         },
       );
 
@@ -41,6 +42,21 @@ const Button: FC<Props> = ({ url, id, activityId, index, cb }) => {
       cb && cb(3);
     }
   }
+  useEffect(() => {
+    (async () => {
+      const name = `${id}-${activityId}-${index + 1}.mp4`;
+      const hasFile: boolean = await exists(name, {
+        dir: BaseDirectory.Download,
+      });
+      console.log(hasFile, name);
+
+      if (hasFile) {
+        setLoad(2);
+        cb && cb(2);
+      }
+    })();
+  }, [id, activityId, index]);
+
   return (
     <button
       key={index}
