@@ -49,21 +49,21 @@ const Item: FC<Props> = ({ data }) => {
     }
     break;
   }
-  console.log({ data, isOkNum });
+  console.log(data.activityId, isOkNum);
   return (
-    <tr ref={ref}>
+    <tr ref={ref} className="font-semibold text-xs">
       <td className="border border-slate-700 p-2">
         <div className="flex space-x-2 justify-center items-center">
-          <span>{data.id}</span>
+          <span>{data.activityId}</span>
           <button
             className={`p-1 font-semibold text-xs text-white rounded-full shadow-sm ${isOkNum === data.videos.length ? "bg-amber-500" : clicked ? "bg-indigo-500" : "bg-cyan-500"}`}
             onClick={downloadAllFn}
           >
-            全部下载
+            {isOkNum === data.videos.length ? "已完成" : "全部下载"}
           </button>
         </div>
       </td>
-      <td className="border border-slate-700 p-2">{data.uid}</td>
+      <td className="border border-slate-700 p-2 text-center">{data.meyoId}</td>
       <td className="border border-slate-700 p-2">
         <div className="flex space-x-2 justify-center">
           {data.videos.map((url: string, index: number) => (

@@ -44,7 +44,7 @@ function App() {
             <thead>
               <tr>
                 <th className="border border-slate-600 p-2">活动ID</th>
-                <th className="border border-slate-600 p-2">UID</th>
+                <th className="border border-slate-600 p-2">用户ID</th>
                 <th className="border border-slate-600 p-2">按钮</th>
               </tr>
             </thead>
