@@ -3,7 +3,6 @@ import { FC, useEffect, useState } from "react";
 import { getClient, ResponseType } from "@tauri-apps/api/http";
 import { exists, writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
 
-import * as fs from "@tauri-apps/api/fs";
 interface Props {
   url: string;
   id: number;
