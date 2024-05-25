@@ -49,7 +49,6 @@ const Item: FC<Props> = ({ data }) => {
     }
     break;
   }
-  console.log(data.activityId, isOkNum);
   return (
     <tr ref={ref} className="font-semibold text-xs">
       <td className="border border-slate-700 p-2">
@@ -59,7 +58,11 @@ const Item: FC<Props> = ({ data }) => {
             className={`p-1 font-semibold text-xs text-white rounded-full shadow-sm ${isOkNum === data.videos.length ? "bg-amber-500" : clicked ? "bg-indigo-500" : "bg-cyan-500"}`}
             onClick={downloadAllFn}
           >
-            {isOkNum === data.videos.length ? "已完成" : "全部下载"}
+            {isOkNum === data.videos.length
+              ? "已完成"
+              : isOkNum > 0
+                ? `已下载(${isOkNum}/${data.videos.length})`
+                : "全部下载"}
           </button>
         </div>
       </td>
