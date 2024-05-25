@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from "react";
 
-import { getClient, ResponseType } from "@tauri-apps/api/http";
-import { exists, writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
+import { exists, BaseDirectory } from "@tauri-apps/api/fs";
+import { addTak } from "./download";
 
 interface Props {
   url: string;
@@ -12,35 +12,6 @@ interface Props {
 }
 const Button: FC<Props> = ({ url, id, activityId, index, cb }) => {
   const [load, setLoad] = useState(0); // 0 before load 1 loading 2 loaded 3 load error
-  async function download(url: string, fileName: string) {
-    if (load === 1 || load === 2) {
-      return;
-    }
-    setLoad(1);
-    try {
-      const client = await getClient();
-
-      const data = (
-        await client.get(url, {
-          responseType: ResponseType.Binary,
-        })
-      ).data as any;
-      await writeBinaryFile(
-        fileName, // Change this to where the file should be saved
-        data,
-        {
-          dir: BaseDirectory.Download,
-        },
-      );
-
-      setLoad(2);
-      cb && cb(2);
-    } catch (error) {
-      console.log("error", error);
-      setLoad(3);
-      cb && cb(3);
-    }
-  }
   useEffect(() => {
     (async () => {
       const name = `${id}-${activityId}-${index + 1}.mp4`;
@@ -61,7 +32,21 @@ const Button: FC<Props> = ({ url, id, activityId, index, cb }) => {
       key={index}
       className="item-butn px-2 py-1 flex font-semibold space-x-1 text-xs bg-cyan-500 text-white rounded-full shadow-sm"
       onClick={() => {
-        download(url, `${id}-${activityId}-${index + 1}.mp4`);
+        if (load === 1) {
+          return;
+        }
+        setLoad(1);
+        addTak(
+          `${id}-${activityId}-${index + 1}`,
+          url,
+          () => {
+            setLoad(2);
+            cb && cb(2);
+          },
+          () => {
+            setLoad(3);
+          },
+        );
       }}
     >
       <span>{index + 1}</span>
