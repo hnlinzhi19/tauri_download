@@ -3,6 +3,7 @@ import { FC, useEffect, useState } from "react";
 import { exists, BaseDirectory } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api";
 import { listen } from "@tauri-apps/api/event";
+import { asyncQueue } from "./download";
 
 interface Props {
   url: string;
@@ -52,18 +53,34 @@ const Button: FC<Props> = ({ url, id, activityId, index, cb }) => {
           return;
         }
         setLoad(1);
-        invoke("download", {
-          url: url,
-          name: `${id}-${activityId}-${index + 1}`,
-        })
-          .then(() => {
-            setLoad(2);
-            cb && cb(2);
+        asyncQueue
+          .enqueue(async () => {
+            invoke("download", {
+              url: url,
+              name: `${id}-${activityId}-${index + 1}`,
+            })
+              .then(() => {
+                asyncQueue.delete();
+                setLoad(2);
+                cb && cb(2);
+                asyncQueue.dequeue();
+              })
+              .catch((e) => {
+                asyncQueue.delete();
+                console.error(e);
+                setLoad(3);
+                cb && cb(3);
+                asyncQueue.dequeue();
+              });
           })
           .catch(() => {
+            asyncQueue.delete();
+            console.error("Queue error");
             setLoad(3);
             cb && cb(3);
+            asyncQueue.dequeue();
           });
+        asyncQueue.dequeue();
       }}
     >
       <b style={{ width: `${progress}%` }}></b>
