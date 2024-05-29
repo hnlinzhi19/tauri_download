@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { readText } from "@tauri-apps/api/clipboard";
 import "./App.css";
 import Item, { ItemData } from "./item";
-// import Buttons, { UserData } from "./butns";
 
 function App() {
   const [data, setData] = useState<ItemData[]>([]);
@@ -27,8 +26,8 @@ function App() {
 
   return (
     <div className="container mx-auto mt-0.5">
-      <div className="flex flex-row">
-        <div className="basis-1/6">
+      <div className="">
+        <div className="p-2">
           <button
             type="button"
             className={`p-2 font-semibold text-xs text-white rounded-full shadow-sm bg-green-800`}
@@ -39,7 +38,7 @@ function App() {
             粘贴数据
           </button>
         </div>
-        <div className="basis-5/6 divide-y">
+        <div>
           <table className="border-collapse w-full border border-slate-400  bg-white  text-sm shadow-sm">
             <thead>
               <tr>

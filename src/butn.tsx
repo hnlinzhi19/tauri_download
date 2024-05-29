@@ -1,7 +1,8 @@
 import { FC, useEffect, useState } from "react";
 
 import { exists, BaseDirectory } from "@tauri-apps/api/fs";
-import { addTak } from "./download";
+import { invoke } from "@tauri-apps/api";
+import { listen } from "@tauri-apps/api/event";
 
 interface Props {
   url: string;
@@ -12,6 +13,8 @@ interface Props {
 }
 const Button: FC<Props> = ({ url, id, activityId, index, cb }) => {
   const [load, setLoad] = useState(0); // 0 before load 1 loading 2 loaded 3 load error
+  const [progress, setProgress] = useState(0);
+
   useEffect(() => {
     (async () => {
       const name = `${id}-${activityId}-${index + 1}.mp4`;
@@ -26,30 +29,45 @@ const Button: FC<Props> = ({ url, id, activityId, index, cb }) => {
       }
     })();
   }, [id, activityId, index]);
+  useEffect(() => {
+    const name = `${id}-${activityId}-${index + 1}`;
+
+    const unbind = listen("Download", ({ payload }: any) => {
+      if (payload.name === name) {
+        setProgress(Number(payload.percent));
+      }
+    });
+    return () => {
+      unbind.then((f) => f());
+    };
+  }, [id, activityId, index]);
 
   return (
     <button
       key={index}
-      className="item-butn px-2 py-1 flex font-semibold space-x-1 text-xs bg-cyan-500 text-white rounded-full shadow-sm"
+      data-width="10%"
+      className="item-butn px-2 py-1 justify-center flex font-semibold space-x-1 text-xs bg-cyan-500 text-white rounded-full shadow-sm"
       onClick={() => {
         if (load === 1) {
           return;
         }
         setLoad(1);
-        addTak(
-          `${id}-${activityId}-${index + 1}`,
-          url,
-          () => {
+        invoke("download", {
+          url: url,
+          name: `${id}-${activityId}-${index + 1}`,
+        })
+          .then(() => {
             setLoad(2);
             cb && cb(2);
-          },
-          () => {
+          })
+          .catch(() => {
             setLoad(3);
-          },
-        );
+            cb && cb(3);
+          });
       }}
     >
-      <span>{index + 1}</span>
+      <b style={{ width: `${progress}%` }}></b>
+      <span>{load === 1 ? `${progress}%` : index + 1}</span>
 
       {load === 3 ? (
         <svg
