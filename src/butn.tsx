@@ -1,9 +1,10 @@
 import { FC, useEffect, useState } from "react";
-
-import { exists, BaseDirectory } from "@tauri-apps/api/fs";
+import { exists, BaseDirectory, removeFile } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api";
 import { listen } from "@tauri-apps/api/event";
 import { asyncQueue } from "./download";
+import { downloadDir } from "@tauri-apps/api/path";
+import { throttle } from "lodash";
 
 interface Props {
   url: string;
@@ -12,6 +13,8 @@ interface Props {
   index: number;
   cb?: (n: number) => void;
 }
+// 定义一个节流函数
+
 const Button: FC<Props> = ({ url, id, activityId, index, cb }) => {
   const [load, setLoad] = useState(0); // 0 before load 1 loading 2 loaded 3 load error
   const [progress, setProgress] = useState(0);
@@ -32,10 +35,14 @@ const Button: FC<Props> = ({ url, id, activityId, index, cb }) => {
   }, [id, activityId, index]);
   useEffect(() => {
     const name = `${id}-${activityId}-${index + 1}`;
+    const update = throttle((payload: any) => {
+      setProgress(Number(payload.percent));
+    }, 200);
 
     const unbind = listen("Download", ({ payload }: any) => {
       if (payload.name === name) {
-        setProgress(Number(payload.percent));
+        update(payload);
+        // setProgress(Number(payload.percent));
       }
     });
     return () => {
@@ -71,6 +78,14 @@ const Button: FC<Props> = ({ url, id, activityId, index, cb }) => {
                 setLoad(3);
                 cb && cb(3);
                 asyncQueue.dequeue();
+                downloadDir()
+                  .then((path: string) => {
+                    // 出现异常删除本地缓存了一半的文件
+                    removeFile(`${path}/${name}.mp4`);
+                  })
+                  .catch(() => {
+                    console.error("Delete erro");
+                  });
               });
           })
           .catch(() => {
