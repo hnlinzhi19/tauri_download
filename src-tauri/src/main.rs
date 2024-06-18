@@ -5,17 +5,17 @@ mod download;
 
 use std::collections::HashMap;
 
-use tokio::sync::Mutex;
-
 use download::download;
 use lazy_static::lazy_static;
 use tauri::{api::dialog::ask, Manager};
+use tokio::sync::{Mutex, Semaphore};
 lazy_static! {
     static ref DOWNLOADING: Mutex<HashMap<String, u32>> = Mutex::new({
         let m = HashMap::new();
         m
     });
     static ref CLOSEABLE: Mutex<bool> = Mutex::new(false);
+    static ref PERMITS: Semaphore = Semaphore::const_new(6);
 }
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -28,7 +28,8 @@ fn exit() {
 fn exit_before() {
     let rt = tokio::runtime::Runtime::new().unwrap();
     rt.block_on(async {
-        close_window().await;
+        let mut down = crate::CLOSEABLE.lock().await;
+        *down = true;
     });
     loop {
         let mut size = 0;
@@ -42,27 +43,9 @@ fn exit_before() {
     }
 }
 
-async fn increment(key: String) {
-    let mut down = crate::DOWNLOADING.lock().await;
-    down.entry(key).or_insert(1);
-}
-async fn decrement(key: String) {
-    let mut down = crate::DOWNLOADING.lock().await;
-    down.remove(&key);
-}
-
 async fn gecrement() -> usize {
     let down = crate::DOWNLOADING.lock().await;
     down.values().len()
-}
-
-async fn close_window() {
-    let mut down = crate::CLOSEABLE.lock().await;
-    *down = true;
-}
-async fn get_close_window() -> bool {
-    let down = crate::CLOSEABLE.lock().await;
-    *down
 }
 
 fn main() {

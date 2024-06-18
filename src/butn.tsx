@@ -60,42 +60,31 @@ const Button: FC<Props> = ({ url, id, activityId, index, cb }) => {
           return;
         }
         setLoad(1);
-        asyncQueue
-          .enqueue(async () => {
-            invoke("download", {
-              url: url,
-              name: `${id}-${activityId}-${index + 1}`,
-            })
-              .then(() => {
-                asyncQueue.delete();
-                setLoad(2);
-                cb && cb(2);
-                asyncQueue.dequeue();
-              })
-              .catch((e) => {
-                asyncQueue.delete();
-                console.error(e);
-                setLoad(3);
-                cb && cb(3);
-                asyncQueue.dequeue();
-                downloadDir()
-                  .then((path: string) => {
-                    // 出现异常删除本地缓存了一半的文件
-                    removeFile(`${path}/${name}.mp4`);
-                  })
-                  .catch(() => {
-                    console.error("Delete erro");
-                  });
-              });
-          })
-          .catch(() => {
+        invoke("download", {
+          url: url,
+          name: `${id}-${activityId}-${index + 1}`,
+        })
+          .then(() => {
             asyncQueue.delete();
-            console.error("Queue error");
+            setLoad(2);
+            cb && cb(2);
+            asyncQueue.dequeue();
+          })
+          .catch((e) => {
+            asyncQueue.delete();
+            console.error(e);
             setLoad(3);
             cb && cb(3);
             asyncQueue.dequeue();
+            downloadDir()
+              .then((path: string) => {
+                // 出现异常删除本地缓存了一半的文件
+                removeFile(`${path}/${name}.mp4`);
+              })
+              .catch(() => {
+                console.error("Delete erro");
+              });
           });
-        asyncQueue.dequeue();
       }}
     >
       <b style={{ width: `${progress}%` }}></b>

@@ -37,6 +37,7 @@ impl<'a> DownloadFile<'a> {
 
 #[tauri::command]
 pub async fn download(window: Window, url: &str, name: &str) -> Result<String, String> {
+    let _permit = crate::PERMITS.acquire().await.unwrap();
     let mut download_file = DownloadFile::new(name, url);
     let client = Client::new();
     let resp = client
@@ -60,16 +61,24 @@ pub async fn download(window: Window, url: &str, name: &str) -> Result<String, S
 
     let mut download_size: u64 = 0;
     let mut stream = resp.bytes_stream();
-    crate::increment(name.to_string()).await;
+    {
+        let mut down = crate::DOWNLOADING.lock().await;
+        down.entry(name.to_string()).or_insert(1);
+    }
 
     while let Some(v) = stream.next().await {
         let chunk = v.or(Err(format!("Error downloading:{}", url)))?;
         download_size += chunk.len() as u64;
         download_file.change_loaded(download_size);
 
-        let close = crate::get_close_window().await;
+        let close = {
+            let down = crate::CLOSEABLE.lock().await;
+            *down
+        };
+
         if close {
-            crate::decrement(name.to_string()).await;
+            let mut down = crate::DOWNLOADING.lock().await;
+            down.remove(name);
             std::fs::remove_file(&output).unwrap();
             break;
         }
@@ -80,8 +89,10 @@ pub async fn download(window: Window, url: &str, name: &str) -> Result<String, S
             .emit("Download", &download_file)
             .or(Err(format!("Download cb error")))?;
     }
-
-    crate::decrement(name.to_string()).await;
+    {
+        let mut down = crate::DOWNLOADING.lock().await;
+        down.remove(name);
+    }
 
     Ok("Success".to_string())
 }
