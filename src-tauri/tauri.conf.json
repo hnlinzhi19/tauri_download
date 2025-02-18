@@ -64,7 +64,7 @@
       ]
     },
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; img-src meyo-downloader://*;"
     },
     "windows": [
       {

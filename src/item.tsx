@@ -1,5 +1,5 @@
-import { FC, useRef, useState } from "react";
-import Butn from "./butn";
+import { FC, useRef, useState } from 'react';
+import Butn from './butn';
 export interface ItemData {
   activityId: number;
   approvalTime: number;
@@ -31,7 +31,7 @@ const Item: FC<Props> = ({ data }) => {
     const elem: HTMLElement | null = ref.current;
     if (elem) {
       // @ts-ignore
-      const butns = elem.querySelectorAll(".item-butn");
+      const butns = elem.querySelectorAll('.item-butn');
       butns.forEach((ele: any) => {
         ele.click();
       });
@@ -53,16 +53,16 @@ const Item: FC<Props> = ({ data }) => {
     <tr ref={ref} className="font-semibold text-xs">
       <td className="border border-slate-700 p-2">
         <div className="flex space-x-2 justify-center items-center">
-          <span>{data.activityId}</span>
+          <span>{data.period}</span>
           <button
-            className={`p-1 font-semibold text-xs text-white rounded-full shadow-sm ${isOkNum === data.videos.length ? "bg-amber-500" : clicked ? "bg-indigo-500" : "bg-cyan-500"}`}
+            className={`p-1 font-semibold text-xs text-white rounded-full shadow-sm ${isOkNum === data.videos.length ? 'bg-amber-500' : clicked ? 'bg-indigo-500' : 'bg-cyan-500'}`}
             onClick={downloadAllFn}
           >
             {isOkNum === data.videos.length
-              ? "已完成"
+              ? '已完成'
               : isOkNum > 0
                 ? `已下载(${isOkNum}/${data.videos.length})`
-                : "全部下载"}
+                : '全部下载'}
           </button>
         </div>
       </td>
@@ -71,10 +71,10 @@ const Item: FC<Props> = ({ data }) => {
         <div className="flex space-x-2 justify-center">
           {data.videos.map((url: string, index: number) => (
             <Butn
-              key={`${data.id}-${index}`}
+              key={`${data.period}-${index}`}
               url={url}
               id={data.meyoId}
-              activityId={data.activityId}
+              activityId={data.period}
               index={index}
               cb={(status: number) => {
                 updateMap(index, status);
